@@ -24,7 +24,7 @@ julia> interval_isapprox(a, b; atol=1e-15)
 false
 ```
 """
-interval_isapprox(a::Interval, b::Interval; kwargs...) = isapprox(a.lo, b.lo; kwargs...) && isapprox(a.hi, b.hi; kwargs...)
+interval_isapprox(a::Interval, b::Interval; kwargs...) = isapprox(inf(a), inf(a); kwargs...) && isapprox(sup(a), sup(b); kwargs...)
 
 """
     interval_norm(A::AbstractMatrix{T}) where {T<:Interval}
@@ -75,7 +75,7 @@ function enclose(A::StaticMatrix{N, N, T}, b::StaticVector{N, T}) where {N, T<:I
     C = inv(mid.(A))
     A1 = Diagonal(ones(N)) - C*A
     e = interval_norm(C*b)/(1 - interval_norm(A1))
-    x0 = MVector{N, T}(ntuple(_ -> -e..e, Val(N)))
+    x0 = MVector{N, T}(ntuple(_ -> interval(-e, e), Val(N)))
     return x0
 end
 
@@ -84,7 +84,7 @@ function enclose(A::AbstractMatrix{T}, b::AbstractVector{T}) where {T<:Interval}
     C = inv(mid.(A))
     A1 = Diagonal(ones(n)) - C*A
     e = interval_norm(C*b)/(1 - interval_norm(A1))
-    x0 = fill(-e..e, n)
+    x0 = fill(interval(-e, e), n)
     return x0
 end
 
@@ -174,3 +174,20 @@ Base.lastindex(O::Orthants) = length(O)
 
 _unchecked_interval(x::Real) = Interval(x)
 _unchecked_interval(x::Complex) = Interval(real(x)) + Interval(imag(x)) * im
+
+# adapted from Julia stdlib.
+function IntervalArithmetic.isequal_interval(A::AbstractArray{T1}, B::AbstractArray{T2}) where {T <: Union{BareInterval, Interval}, T1 <: Union{T, Complex{T}}, T2 <: Union{T, Complex{T}}}
+    if axes(A) != axes(B)
+        return false
+    end
+    anymissing = false
+    for (a, b) in zip(A, B)
+        eq = isequal_interval(a, b)
+        if ismissing(eq)
+            anymissing = true
+        elseif !eq
+            return false
+        end
+    end
+    return anymissing ? missing : true
+end

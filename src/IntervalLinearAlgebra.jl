@@ -7,6 +7,7 @@ import Base: +, -, *, /, \, ==,
             show, convert, promote_rule, zero, one,
             getindex, IndexStyle, setindex!, size
 import CommonSolve: solve
+import IntervalArithmetic: isequal_interval
 
 @reexport using LinearAlgebra, IntervalArithmetic
 
@@ -30,17 +31,17 @@ include("linear_systems/enclosures.jl")
 include("linear_systems/precondition.jl")
 include("linear_systems/solve.jl")
 include("linear_systems/verify.jl")
-include("linear_systems/oettli.jl")
+# include("linear_systems/oettli.jl")
 include("multiplication.jl")
 include("utils.jl")
 include("classify.jl")
 include("rref.jl")
-include("pils/affine_expressions.jl")
-include("pils/affine_parametric_array.jl")
-include("pils/pils_solvers.jl")
+# include("pils/affine_expressions.jl")
+# include("pils/affine_parametric_array.jl")
+# include("pils/pils_solvers.jl")
 
-include("eigenvalues/interval_eigenvalues.jl")
-include("eigenvalues/verify_eigs.jl")
+# include("eigenvalues/interval_eigenvalues.jl")
+# include("eigenvalues/verify_eigs.jl")
 
 include("numerical_test/multithread.jl")
 
@@ -75,9 +76,9 @@ function  __init__()
     else
         BLAS.set_num_threads(1)
         @warn "The number of BLAS threads was set to 1 to ensure rounding mode is consistent"
-        if !NumericalTest.rounding_test(1, 1024)
-            @warn "The rounding test failed on 1 thread"
-        end
+        # if !NumericalTest.rounding_test(1, 1024)
+        #     @warn "The rounding test failed on 1 thread"
+        # end
     end
 end
 

@@ -27,7 +27,7 @@ function rounding_test(n,k)
     
     BLAS.set_num_threads( n )
     A = test_matrix( k )
-    B = setrounding(Float64, RoundUp) do
+    B = setrounding(BigFloat, RoundUp) do
         BLAS.gemm('N', 'T', 1.0, A, A)
     end
 

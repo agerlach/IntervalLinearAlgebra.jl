@@ -189,5 +189,6 @@ function is_M_matrix(A::AbstractMatrix{T}) where {T<:Interval}
     e = ones(size(A, 1))
     u = Ainf\e
     all(u .> 0) || return false
-    return all(A*u .> 0)
+    # return all(inf.(A*u) .> 0)
+    return all(strictprecedes.(interval(0), A*u))
 end

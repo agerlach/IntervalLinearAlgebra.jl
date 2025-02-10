@@ -75,7 +75,7 @@ function *(::MultiplicationType{:fast},
     Binf = inf.(B)
     Bsup = sup.(B)
 
-    mA, mB, R, Csup = setrounding(T, RoundUp) do
+    mA, mB, R, Csup = setrounding(BigFloat, RoundUp) do
         mA = Ainf + 0.5 * (Asup - Ainf)
         mB = Binf + 0.5 * (Bsup - Binf)
 
@@ -88,11 +88,11 @@ function *(::MultiplicationType{:fast},
         return mA, mB, R, Csup
     end
 
-    Cinf = setrounding(T, RoundDown) do
+    Cinf = setrounding(BigFloat, RoundDown) do
         mA * mB - R
     end
 
-    return Interval.(Cinf, Csup)
+    return interval.(Cinf, Csup)
 end
 
 
@@ -103,7 +103,7 @@ function *(::MultiplicationType{:fast},
     Binf = inf.(B)
     Bsup = sup.(B)
 
-    mB, R, Csup = setrounding(T, RoundUp) do
+    mB, R, Csup = setrounding(BigFloat, RoundUp) do
         mB = Binf + 0.5 * (Bsup - Binf)
 
         rB = mB - Binf
@@ -114,11 +114,11 @@ function *(::MultiplicationType{:fast},
         return mB, R, Csup
     end
 
-    Cinf = setrounding(T, RoundDown) do
+    Cinf = setrounding(BigFloat, RoundDown) do
         A * mB - R
     end
 
-    return Interval.(Cinf, Csup)
+    return interval.(Cinf, Csup)
 end
 
 function *(::MultiplicationType{:fast},
@@ -128,7 +128,7 @@ function *(::MultiplicationType{:fast},
     Ainf = inf.(A)
     Asup = sup.(A)
 
-    mA, R, Csup = setrounding(T, RoundUp) do
+    mA, R, Csup = setrounding(BigFloat, RoundUp) do
         mA = Ainf + 0.5 * (Asup - Ainf)
 
         rA = mA - Ainf
@@ -139,11 +139,11 @@ function *(::MultiplicationType{:fast},
         return mA, R, Csup
     end
 
-    Cinf = setrounding(T, RoundDown) do
+    Cinf = setrounding(BigFloat, RoundDown) do
         mA * B - R
     end
 
-    return Interval.(Cinf, Csup)
+    return interval.(Cinf, Csup)
 end
 
 
@@ -161,7 +161,7 @@ function *(::MultiplicationType{:rank1},
     Csup =  zeros(T, (size(A,1), size(B,2)))
     Cinf = zeros(T, size(A, 1), size(B, 2))
 
-    Cinf = setrounding(T, RoundDown) do
+    Cinf = setrounding(BigFloat, RoundDown) do
         for i in 1:n
             Cinf .+= min.(view(Ainf, :, i) * view(Binf, i, :)',
                           view(Ainf, :, i) * view(Bsup, i, :)',
@@ -171,7 +171,7 @@ function *(::MultiplicationType{:rank1},
         return Cinf
     end
 
-    Csup = setrounding(T, RoundUp) do
+    Csup = setrounding(BigFloat, RoundUp) do
         for i in 1:n
             Csup .+= max.(view(Ainf, :, i) * view(Binf, i, :)',
                           view(Ainf, :, i) * view(Bsup, i, :)',
@@ -181,7 +181,7 @@ function *(::MultiplicationType{:rank1},
         return Csup
     end
 
-    return Interval.(Cinf, Csup)
+    return interval.(Cinf, Csup)
 
 
 end

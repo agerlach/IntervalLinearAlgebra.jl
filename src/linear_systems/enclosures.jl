@@ -69,15 +69,16 @@ function (hbr::HansenBliekRohn)(A::AbstractMatrix{T},
 
     cert || @warn "Could not find a verified enclosure of ⟨A⟩⁻¹"
 
-    all(sum(compA_inv; dims=2) .> 0) || throw(ArgumentError("applying Hanben-Bliek-Rohn to a non-H-matrix."))
+    # all(sum(compA_inv; dims=2) .> 0) || throw(ArgumentError("applying Hanben-Bliek-Rohn to a non-H-matrix."))
+    all(strictprecedes.(interval(0), sum(compA_inv; dims=2))) || throw(ArgumentError("applying Hanben-Bliek-Rohn to a non-H-matrix."))
     u = compA_inv * mag.(b)
     d = diag(compA_inv)
 
     _α = sup.(diag(compA) .- 1 ./ d)
-    α = Interval.(-_α, _α)
+    α = interval.(-_α, _α)
 
     _β = @. sup(u/d - mag(b))
-    β = Interval.(-_β, _β)
+    β = interval.(-_β, _β)
 
     return (b .+ β) ./ (diag(A) .+ α)
 
@@ -208,7 +209,7 @@ function (jac::Jacobi)(A::AbstractMatrix{T},
             for j in 1:n
                 (i == j) || (x[i] -= A[i, j] * xold[j])
             end
-            x[i] = (x[i]/A[i, i]) ∩ xold[i]
+            x[i] = hull((x[i]/A[i, i]) , xold[i])
         end
         all(interval_isapprox.(x, xold; atol=atol)) && break
     end
@@ -287,7 +288,7 @@ function (gs::GaussSeidel)(A::AbstractMatrix{T},
             @inbounds for j in 1:n
                 (i == j) || (x[i] -= A[i, j] * x[j])
             end
-            x[i] = (x[i]/A[i, i]) .∩ xold[i]
+            x[i] = hull.((x[i]/A[i, i]) , xold[i])
         end
         all(interval_isapprox.(x, xold; atol=atol)) && break
     end
@@ -358,10 +359,10 @@ function (kra::LinearKrawczyk)(A::AbstractMatrix{T},
                                x::AbstractVector{T}=enclose(A, b)) where {T<:Interval}
 
     atol = iszero(kra.atol) ? minimum(diam.(A))*1e-5 : kra.atol
-
+    
     C = inv(mid.(A))
     for i = 1:kra.max_iterations
-        xnew  = (C*b  - C*(A*x) + x) .∩ x
+        xnew  = hull.((C*b  - C*(A*x) + x) , x)
         all(interval_isapprox.(x, xnew; atol=atol)) && return xnew
         x = xnew
     end
