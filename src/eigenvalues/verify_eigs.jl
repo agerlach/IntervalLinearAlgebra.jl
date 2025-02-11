@@ -74,35 +74,36 @@ function verify_eigen(A, λ, X0; kwargs...)
         interval(real(λ), ρ; format = :midpoint),
         interval(imag(λ), ρ; format = :midpoint)
     )
-    return ev, X0 + X, cert
+    return ev, interval.(X0) + X, cert
 end
 
 function verify_eigen(A::Symmetric, λ, X0; kwargs...)
     ρ, X, cert = _verify_eigen(A, λ, X0; kwargs...)
-    return interval(λ, ρ; format = :midpoint), X0 + real.(X), cert
+    return interval(λ, ρ; format = :midpoint), interval.(X0) + real.(X), cert
 end
 
 function _verify_eigen(A, λ::Number, X0::AbstractVector;
-                      w=0.1, ϵ=floatmin(), maxiter=10)
+                      w=interval(0.1), ϵ=floatmin(), maxiter=10)
 
     _, v = findmax(abs.(X0))
 
+    In = interval(I(size(A)[1]))
     R = mid.(A) - λ * I
     R[:, v] .= -X0
-    R = inv(R)
-    C = IA.interval.(A) - λ * I
-    Z = -R * (C * X0)
-    C[:, v] .= -X0
-    C = I - R * C
+    R = interval.(inv(R))
+    C = IA.interval.(A) - interval(λ) * In
+    Z = -R * (C * interval.(X0))
+    C[:, v] .= -interval.(X0)
+    C = In - R * C
     Zinfl = w * IA.interval.(-mag.(Z), mag.(Z)) .+ IA.interval(-ϵ, ϵ)
 
     X = Complex.(Z)
     cert = false
     @inbounds for _ in 1:maxiter
-        Y = (real.(X) + Zinfl) + (imag.(X) + Zinfl) * im
+        Y = complex.(real.(X) + Zinfl, imag.(X) + Zinfl)
 
         Ytmp = Y * Y[v]
-        Ytmp[v] = 0
+        Ytmp[v] = interval(0)
 
         X = Z + C * Y + R * Ytmp
         cert = all(isinterior.(X, Y))
@@ -110,7 +111,7 @@ function _verify_eigen(A, λ::Number, X0::AbstractVector;
     end
 
     ρ = mag(X[v])
-    X[v] = 0
+    X[v] = interval(0)
 
     return ρ, X, cert
 end

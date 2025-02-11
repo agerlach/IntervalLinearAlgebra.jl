@@ -15,6 +15,8 @@ end
 
     evals, evecs, cert = verify_eigen(A)
     @test all(cert)
+    @test all(isguaranteed.(evals))
+    @test all(isguaranteed.(evecs))
     @test all(in_interval.(ev , evals))
 
 
@@ -25,13 +27,17 @@ end
 
     evals, evecs, cert = verify_eigen(A)
     @test all(cert)
+    @test all(isguaranteed.(evals))
+    @test all(isguaranteed.(evecs))
     @test all(in_interval.(ev , evals))
 
     # test complex eigenvalues
     ev = sort(rand(Complex{Float64}, n), by = x -> (real(x), imag(x)))
-    A = IA.interval.(P) * Matrix(Diagonal(interval.(ev))) * Pinv
+    A = IA.interval.(P) * Matrix(interval.(Diagonal(ev))) * Pinv
 
     evals, evecs, cert = verify_eigen(A)
     @test all(cert)
+    @test all(isguaranteed.(evals))
+    @test all(isguaranteed.(evecs))
     @test all(in_interval.(ev , evals))
 end

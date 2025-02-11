@@ -9,6 +9,7 @@
     x, cert = epsilon_inflation(Afloat, bfloat)
 
     @test all(in_interval.(ones(n) , x))
+    @test all(isguaranteed.(x))
     @test cert
 
     Ain = convert.(IA.Interval{Float64}, IA.interval.(Arat, Arat))
@@ -17,6 +18,7 @@
     x, cert = epsilon_inflation(Ain, bin)
 
     @test all(in_interval.(ones(n) , x))
+    @test all(isguaranteed.(x))
     @test cert
 
     # big float test
@@ -28,6 +30,7 @@
     @test cert
     @test all(diam.(x) .< 1e-50)
     @test all(in_interval.(ones(n) , x))
+    @test all(isguaranteed.(x))
 
     # case when should not be possible to certify
     A = [1..2 1..4;0..1 0..1]
