@@ -80,8 +80,8 @@ function epsilon_inflation(A::AbstractMatrix{T}, b::AbstractArray{S, N};
 
     r1 = interval(1 - r, 1 + r)
     ϵ1 = interval(-ϵ, ϵ)
-    R = inv(mid.(A))
-    C = I - R * A
+    R = interval.(inv(mid.(A)))
+    C = interval.(I(first(size(A)))) - R * A
     xs = R * mid.(b)
     z = R * (b - (A * interval.(xs)))
     x = z

@@ -78,7 +78,7 @@ struct InverseMidpoint <: AbstractPrecondition end
 
 function (imp::InverseMidpoint)(A::AbstractMatrix{T},
                                 b::AbstractVector{T}) where {T<:Interval}
-    R = inv(mid.(A))
+    R = interval.(inv(mid.(A)))
     return R*A, R*b
 end
 
@@ -119,6 +119,6 @@ struct InverseDiagonalMidpoint <: AbstractPrecondition end
 
 function (idmp::InverseDiagonalMidpoint)(A::AbstractMatrix{T},
                                          b::AbstractVector{T}) where {T<:Interval}
-    R = inv(Diagonal(mid.(A)))
+    R = interval.(inv(Diagonal(mid.(A))))
     return R*A, R*b
 end

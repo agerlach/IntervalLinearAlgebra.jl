@@ -31,7 +31,7 @@ For more details see section 5.6.2 of [[HOR19]](@ref)
 
 - Hansen-Bliek-Rohn works with H-matrices without precondition and with strongly regular
   matrices using [`InverseMidpoint`](@ref) precondition
-- If the midpoint of ``A`` is a diagonal matrix, then the algorithm returns the exact hull.
+- If the midpoint of ``A`` is a diagonal matrix, then the algorithm returns the exact intersect_interval.
 - An object of type Hansen-Bliek-Rohn is a callable function with method
 
         (hbr::HansenBliekRohn)(A::AbstractMatrix{T},
@@ -71,13 +71,13 @@ function (hbr::HansenBliekRohn)(A::AbstractMatrix{T},
 
     # all(sum(compA_inv; dims=2) .> 0) || throw(ArgumentError("applying Hanben-Bliek-Rohn to a non-H-matrix."))
     all(strictprecedes.(interval(0), sum(compA_inv; dims=2))) || throw(ArgumentError("applying Hanben-Bliek-Rohn to a non-H-matrix."))
-    u = compA_inv * mag.(b)
+    u = compA_inv * interval.(mag.(b))
     d = diag(compA_inv)
 
-    _α = sup.(diag(compA) .- 1 ./ d)
+    _α = sup.(interval.(diag(compA)) .- interval(1) ./ d)
     α = interval.(-_α, _α)
 
-    _β = @. sup(u/d - mag(b))
+    _β = @. sup(u/d - interval(mag(b)))
     β = interval.(-_β, _β)
 
     return (b .+ β) ./ (diag(A) .+ α)
@@ -209,7 +209,7 @@ function (jac::Jacobi)(A::AbstractMatrix{T},
             for j in 1:n
                 (i == j) || (x[i] -= A[i, j] * xold[j])
             end
-            x[i] = hull((x[i]/A[i, i]) , xold[i])
+            x[i] = intersect_interval((x[i]/A[i, i]) , xold[i])
         end
         all(interval_isapprox.(x, xold; atol=atol)) && break
     end
@@ -288,7 +288,7 @@ function (gs::GaussSeidel)(A::AbstractMatrix{T},
             @inbounds for j in 1:n
                 (i == j) || (x[i] -= A[i, j] * x[j])
             end
-            x[i] = hull.((x[i]/A[i, i]) , xold[i])
+            x[i] = intersect_interval.((x[i]/A[i, i]) , xold[i])
         end
         all(interval_isapprox.(x, xold; atol=atol)) && break
     end
@@ -360,9 +360,9 @@ function (kra::LinearKrawczyk)(A::AbstractMatrix{T},
 
     atol = iszero(kra.atol) ? minimum(diam.(A))*1e-5 : kra.atol
     
-    C = inv(mid.(A))
+    C = interval.(inv(mid.(A)))
     for i = 1:kra.max_iterations
-        xnew  = hull.((C*b  - C*(A*x) + x) , x)
+        xnew  = intersect_interval.((C*b  - C*(A*x) + x) , x)
         all(interval_isapprox.(x, xnew; atol=atol)) && return xnew
         x = xnew
     end

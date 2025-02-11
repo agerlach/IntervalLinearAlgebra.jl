@@ -15,28 +15,34 @@
         xhbr = solve(A, b, hbr)
         xkra = solve(A, b, kra)
 
-        @show xjac
-        # @test all(interval_isapprox.(xgs, [-2.6..3.1, -3.9..1.65, -1.48..2.15, -2.35..0.79]; atol=0.01))
+        for x in (xgs, xjac, xhbr, xkra)
+            @test all(isguaranteed.(x))
+        end
+
+        @show xhbr
+        @test all(interval_isapprox.(xgs, [-2.6..3.1, -3.9..1.65, -1.48..2.15, -2.35..0.79]; atol=0.01))
         @test all(interval_isapprox.(xjac, [-2.6..3.1, -3.9..1.65, -1.48..2.15, -2.35..0.79]; atol=0.01))
-
-        # @test all(interval_isapprox.(xhbr, [-2.5..3.1, -3.9..1.2, -1.4..2.15, -2.35..0.6]; atol=0.01))
-
-        # @test all(interval_isapprox.(xkra, [-8..8, -8..8, -8..8, -8..8]; atol=0.01))
+        @test all(interval_isapprox.(xhbr, [-2.5..3.1, -3.9..1.2, -1.4..2.15, -2.35..0.6]; atol=0.01)) # TODO: randomly fails in tests due to random ∅_ill elements. Not repeatable in the REPL
+        @test all(interval_isapprox.(xkra, [-8..8, -8..8, -8..8, -8..8]; atol=0.01))
     end
 
     ge = GaussianElimination()
     xge = solve(Am, bm, ge)
+    @test all(isguaranteed.(xge))
     @test all(interval_isapprox.(xge, [-2.6..3.1, -3.9..1.5, -1.43..2.15, -2.35..0.6]; atol=0.01))
 
     xdef = solve(Am, bm)
+    @test all(isguaranteed.(xdef))
     @test all(interval_isapprox.(xdef, [-2.6..3.1, -3.9..1.5, -1.43..2.15, -2.35..0.6]; atol=0.01))
 
     A = [2..4 -2..1; -1..2 2..4]
     b = [-2..2, -2..2]
 
     x1 = solve(A, b)
+    @test all(isguaranteed.(x1))
     @test all(interval_isapprox.(x1, [-14..14, -14..14]))
     x2 = solve(A, b, HansenBliekRohn())
+    @test all(isguaranteed.(x2))
     @test all(interval_isapprox.(x2, [-14..14, -14..14]))
 
     # test exceptions
