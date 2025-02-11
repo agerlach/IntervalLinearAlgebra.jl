@@ -11,27 +11,27 @@ end
     ev = sort(randn(n))
     D = Diagonal(ev)
     Q, _ = qr(rand(n, n))
-    A = Symmetric(IA.Interval.(Matrix(Q)) * D * IA.Interval.(Matrix(Q')))
+    A = Symmetric(interval.(Matrix(Q)) * interval.(D) * interval.(Matrix(Q')))
 
     evals, evecs, cert = verify_eigen(A)
     @test all(cert)
-    @test all(ev .∈ evals)
+    @test all(in_interval.(ev , evals))
 
 
     # real eigenvalues case
     P = rand(n, n)
     Pinv, _ = epsilon_inflation(P, Diagonal(ones(n)))
-    A = IA.Interval.(P) * D * Pinv
+    A = IA.interval.(P) * interval.(D) * Pinv
 
     evals, evecs, cert = verify_eigen(A)
     @test all(cert)
-    @test all(ev .∈ evals)
+    @test all(in_interval.(ev , evals))
 
     # test complex eigenvalues
     ev = sort(rand(Complex{Float64}, n), by = x -> (real(x), imag(x)))
-    A = IA.Interval.(P) * Matrix(Diagonal(ev)) * Pinv
+    A = IA.interval.(P) * Matrix(Diagonal(interval.(ev))) * Pinv
 
     evals, evecs, cert = verify_eigen(A)
     @test all(cert)
-    @test all(ev .∈ evals)
+    @test all(in_interval.(ev , evals))
 end

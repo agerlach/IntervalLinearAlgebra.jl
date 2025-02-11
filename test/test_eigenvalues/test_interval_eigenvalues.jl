@@ -1,14 +1,16 @@
 @testset "Eigenvalues of interval matrices" begin
 
     # symmetrix matrix
-    A = Symmetric([-1 0 -1..1;
-         0 -1 -1..1;
-         -1..1 -1..1 0.1])
+    A = Symmetric([interval(-1) interval(0)  -1..1;
+                   interval(0)  interval(-1) -1..1;
+                   -1..1        -1..1        interval(0.1)])
 
     evrohn = eigenbox(A)
+    @test isguaranteed(evrohn)
     @test interval_isapprox(evrohn, -2.4143..1.5143; atol=1e-3)
 
     evhertz = eigenbox(A, Hertz())
+    @test isguaranteed(evhertz)
     @test interval_isapprox(evhertz, -1.9674..1.0674; atol=1e-3)
 
     # real matrix
@@ -18,10 +20,12 @@
          -1..0.1 0..1 1..2 -4..2.5]
 
     ev = eigenbox(A)
+    @test isguaranteed(ev)
     @test interval_isapprox(real(ev), -8.8221..3.4408; atol=1e-3)
     @test interval_isapprox(imag(ev), -10.7497..10.7497; atol=1e-3)
 
     evhertz = eigenbox(A, Hertz())
+    @test isguaranteed(evhertz)
     @test interval_isapprox(real(evhertz), -7.3691..3.2742; atol=1e-3)
     @test interval_isapprox(imag(evhertz), -8.794..8.794; atol=1e-3)
 
@@ -31,12 +35,14 @@
         (3..5)+(-4.. -2)*im (7..8)+(-10.. -6)*im 3..4])
 
     ev = eigenbox(A)
+    @test isguaranteed(ev)
     @test interval_isapprox(ev, -15.4447..24.3359; atol=1e-3)
 
     # complex matrix
     A = [(1..2)+(3..4)*im 3..4;1+(2..3)*im 4..5]
 
     ev = eigenbox(A)
+    @test isguaranteed(ev)
     @test interval_isapprox(real(ev), -1.28812..7.28812; atol=1e-3)
     @test interval_isapprox(imag(ev), -2.04649..5.54649; atol=1e-3)
 end

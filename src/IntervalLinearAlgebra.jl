@@ -40,8 +40,8 @@ include("rref.jl")
 # include("pils/affine_parametric_array.jl")
 # include("pils/pils_solvers.jl")
 
-# include("eigenvalues/interval_eigenvalues.jl")
-# include("eigenvalues/verify_eigs.jl")
+include("eigenvalues/interval_eigenvalues.jl")
+include("eigenvalues/verify_eigs.jl")
 
 include("numerical_test/multithread.jl")
 

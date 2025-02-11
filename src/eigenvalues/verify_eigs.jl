@@ -70,12 +70,16 @@ end
 
 function verify_eigen(A, λ, X0; kwargs...)
     ρ, X, cert = _verify_eigen(A, λ, X0; kwargs...)
-    return (real(λ) ± ρ) + (imag(λ) ± ρ) * im, X0 + X, cert
+    ev = complex(
+        interval(real(λ), ρ; format = :midpoint),
+        interval(imag(λ), ρ; format = :midpoint)
+    )
+    return ev, X0 + X, cert
 end
 
 function verify_eigen(A::Symmetric, λ, X0; kwargs...)
     ρ, X, cert = _verify_eigen(A, λ, X0; kwargs...)
-    return λ ± ρ, X0 + real.(X), cert
+    return interval(λ, ρ; format = :midpoint), X0 + real.(X), cert
 end
 
 function _verify_eigen(A, λ::Number, X0::AbstractVector;
@@ -86,11 +90,11 @@ function _verify_eigen(A, λ::Number, X0::AbstractVector;
     R = mid.(A) - λ * I
     R[:, v] .= -X0
     R = inv(R)
-    C = IA.Interval.(A) - λ * I
+    C = IA.interval.(A) - λ * I
     Z = -R * (C * X0)
     C[:, v] .= -X0
     C = I - R * C
-    Zinfl = w * IA.Interval.(-mag.(Z), mag.(Z)) .+ IA.Interval(-ϵ, ϵ)
+    Zinfl = w * IA.interval.(-mag.(Z), mag.(Z)) .+ IA.interval(-ϵ, ϵ)
 
     X = Complex.(Z)
     cert = false
@@ -143,13 +147,13 @@ end
 function _bound_perron_frobenius_eigenvalue(M, max_iter=10)
 
     size(M, 1) == 1 && return M[1]
-    xpf = IA.Interval.(_power_iteration(M, max_iter))
+    xpf = IA.interval.(_power_iteration(M, max_iter))
     Mxpf = M * xpf
     ρ = zero(eltype(M))
     @inbounds for (i, xi) in enumerate(xpf)
         iszero(xi) && continue
         tmp = Mxpf[i] / xi
-        ρ = max(ρ, tmp.hi)
+        ρ = max(ρ, sup(tmp))
     end
     return ρ
 end

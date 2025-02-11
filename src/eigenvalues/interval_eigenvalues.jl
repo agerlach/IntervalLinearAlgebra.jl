@@ -54,7 +54,7 @@ function eigenbox(A::Symmetric{Interval{T}, Matrix{Interval{T}}}, ::Rohn) where 
     ρ = eigmax(AΔ)
     λmax = eigmax(Ac)
     λmin = eigmin(Ac)
-    return Interval(λmin - ρ, λmax + ρ)
+    return interval(λmin - ρ, λmax + ρ)
 
 end
 
@@ -86,32 +86,35 @@ function eigenbox(A::Symmetric{Interval{T}, Matrix{Interval{T}}}, ::Hertz) where
         λmin = min(λmin, candmin)
         λmax = max(λmax, candmax)
     end
-    return IA.Interval(λmin, λmax)
+    return IA.interval(λmin, λmax)
 end
 
 function eigenbox(A::AbstractMatrix{Interval{T}},
                   method::AbstractIntervalEigenSolver) where {T}
 
-    λ = eigenbox(Symmetric(0.5*(A + A')), method)
+    
+    λ = eigenbox(Symmetric(interval(0.5)*(A + A')), method)
 
     n = size(A, 1)
-    μ = eigenbox(Symmetric([zeros(n, n) 0.5*(A - A');
-                            0.5*(A' - A) zeros(n, n)]), method)
+    Z = interval.(zeros(n,n))
+    Q = interval.(0.5)*(A - A')
+    μ = eigenbox(Symmetric([Z Q;
+                            Q Z]), method)
 
-    return λ + μ*im
+    return complex(λ, μ)
 end
 
 function eigenbox(M::AbstractMatrix{Complex{Interval{T}}},
                   method::AbstractIntervalEigenSolver) where {T}
     A = real.(M)
     B = imag.(M)
-    λ = eigenbox(Symmetric(0.5*[A+A' B'-B;
+    λ = eigenbox(Symmetric(interval(0.5)*[A+A' B'-B;
                                 B-B' A+A']), method)
 
-    μ = eigenbox(Symmetric(0.5*[B+B' A-A';
+    μ = eigenbox(Symmetric(interval(0.5)*[B+B' A-A';
                                 A'-A B+B']), method)
 
-    return λ + μ*im
+    return complex(λ, μ)
 end
 
 
