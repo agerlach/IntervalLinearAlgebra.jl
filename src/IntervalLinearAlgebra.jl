@@ -55,8 +55,8 @@ else
 end
 
 function  __init__()
-    @require IntervalConstraintProgramming = "138f1668-1576-5ad7-91b9-7425abbf3153" include("linear_systems/oettli_nonlinear.jl")
-    @require LazySets = "b4f0291d-fe17-52bc-9479-3d1a343d9043" include("linear_systems/oettli_linear.jl")
+    # @require IntervalConstraintProgramming = "138f1668-1576-5ad7-91b9-7425abbf3153" include("linear_systems/oettli_nonlinear.jl")
+    # @require LazySets = "b4f0291d-fe17-52bc-9479-3d1a343d9043" include("linear_systems/oettli_linear.jl")
     if Sys.ARCH == :x86_64
         @info "Switching to OpenBLAS with ConsistentFPCSR = 1 flag enabled, guarantees
         correct floating point rounding mode over all threads."
